@@ -37,12 +37,12 @@ double newVelLeft = 0; // this will be omegaLeft*d/2;
 double newVelRight = 0; // this will be omegaRight*d/2 will be in inches per sec;
 
 //variables carl needed to declare for communication
-int leftMotorRcvd;
-int rightMotorRcvd;
-const byte numChars = 32;
-char receivedChars[numChars];
-char tempChar[numChars];
-boolean newData = false;
+int leftMotorRcvd; //revieved motor commands from Rpi
+int rightMotorRcvd; //..
+const byte numChars = 32; //variables used for parsing
+char receivedChars[numChars]; //..
+char tempChar[numChars]; //..
+boolean newData = false; //..
 
 //end of variables carl needed to declare for communication
 
