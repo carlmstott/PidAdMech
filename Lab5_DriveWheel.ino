@@ -43,7 +43,6 @@ const byte numChars = 32; //variables used for parsing
 char receivedChars[numChars]; //..
 char tempChar[numChars]; //..
 boolean newData = false; //..
-
 //end of variables carl needed to declare for communication
 
 // MOTOR LOOP CONSTANTS
@@ -240,6 +239,7 @@ void parseData(){
   
   strtokIndexer= strtok(NULL, ","); //setting the first input to null causes strtok to continue looking for commas in tempChar starting from where it left off, im not really sure why 
   rightMotorRcvd = atoi(strtokIndexer);
+  //these are the recieved commands from the RPI, unsure what varable to change in order to tell the rest of this program to go that speed
 
 }
 
