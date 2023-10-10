@@ -36,9 +36,15 @@ double velRight = 0; // this will be omegaRight*d/2 will be in inches per sec;
 double newVelLeft = 0; // this will be omegaLeft*d/2;
 double newVelRight = 0; // this will be omegaRight*d/2 will be in inches per sec;
 
-//recieved commands from the rpi
-int leftMotor
-int rightMotor
+//variables carl needed to declare for communication
+int leftMotorRcvd;
+int rightMotorRcvd;
+const byte numChars = 32;
+char receivedChars[numChars];
+char tempChar[numChars];
+boolean newData = false;
+
+//end of variables carl needed to declare for communication
 
 // MOTOR LOOP CONSTANTS
 double interval = 5.0; // 5 ms means 200Hz loop
@@ -78,9 +84,8 @@ void loop() {
 
    if (newData == true) {
 
-    strcpy(tempChar, receivedChars);
-    parseData(); //right now parseData only parses a string of 3 numbers seperated by commas into floats
-                   //so the string 17.5,0,16 becomes three floats; 17.5, 0, and 16
+    strcpy(tempChar, receivedChars); //copy recieved packet ti parse it
+    parseData();
     
     sendDataToRpi();
    }
@@ -190,6 +195,40 @@ int motorVelToSpeedCommand(double Vel, double maxVel){
     return newSpeed;
 }
 
+void recvWithStartEndMarkers() {
+    static boolean recvInProgress = false;
+    static byte ndx = 0;
+    char startMarker = '<';
+    char endMarker = '>';
+    char rc;
+                                         
+    while (Serial.available() > 0 && newData == false) {
+        rc = Serial.read();
+                                       
+
+        if (recvInProgress == true) {
+            if (rc != endMarker) {
+                receivedChars[ndx] = rc;
+                ndx++;
+                if (ndx >= numChars) {
+                    ndx = numChars - 1;
+                }
+            }
+            else {
+                receivedChars[ndx] = '\0'; // terminates the string, frankly unsure why I need 
+                                           //this but it breaks if I remove it. Bonus points if you find out why
+                recvInProgress = false;
+                ndx = 0;
+                newData = true;
+            }
+        }
+
+        else if (rc == startMarker) {
+            recvInProgress = true;
+        }
+    }
+}
+
 
 void parseData(){
 
@@ -197,15 +236,15 @@ void parseData(){
   char *strtokIndexer; //doing char * allows strtok to increment across my string properly frankly im not sure why... my kingdom for a proper c++ class
 
   strtokIndexer = strtok(tempChar,","); //sets strtokIndexer = to everything up to the first comma in tempChar /0 //this line is broken
-  leftMotor = atoi(strtokIndexer); //converts strtokIndexer into a int
+  leftMotorRcvd = atoi(strtokIndexer); //converts strtokIndexer into a int
   
   strtokIndexer= strtok(NULL, ","); //setting the first input to null causes strtok to continue looking for commas in tempChar starting from where it left off, im not really sure why 
-  rightMotor = atoi(strtokIndexer);
+  rightMotorRcvd = atoi(strtokIndexer);
 
 }
 
 void sendDataToRpi(){
-  Serial.print('<')
+    Serial.print('<');
       Serial.print(velRight);
       Serial.print(',');
       Serial.print(newVelRight);
@@ -213,5 +252,5 @@ void sendDataToRpi(){
       Serial.print(velLeft);
       Serial.print(',');
       Serial.println(newVelLeft);
-      Serial.println('>')
+      Serial.println('>');
 }
